@@ -1,4 +1,4 @@
-package com.kadir.services.imp;
+package com.kadir.services.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,8 +8,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.kadir.dto.DtoCourse;
 import com.kadir.dto.DtoStudent;
 import com.kadir.dto.DtoStudentIU;
+import com.kadir.entities.Course;
 import com.kadir.entities.Student;
 import com.kadir.repository.StudentRepository;
 import com.kadir.services.IStudentService;
@@ -46,15 +48,24 @@ public class StudentServiceImpl implements IStudentService {
 
 	@Override
 	public DtoStudent getStudentById(Integer id) {
-		DtoStudent dto = new DtoStudent();
-		// Optional<Student> optional = studentRepository.findById(id); //JPA'nın metodu
-		Optional<Student> optional = studentRepository.findStudentById(id);
-		if (optional.isPresent()) {
-			Student dbStudent = optional.get();
-			BeanUtils.copyProperties(dbStudent, dto);
-			return dto;
+		DtoStudent dtoStudent = new DtoStudent();
+		Optional<Student> optional = studentRepository.findById(id);
+		if (optional.isEmpty()) {
+			return null;
 		}
-		return null;
+		Student dbStudent = optional.get();
+		BeanUtils.copyProperties(dbStudent, dtoStudent);
+
+		if (dbStudent.getCourses() != null && !dbStudent.getCourses().isEmpty()) {
+			for (Course course : dbStudent.getCourses()) {
+				DtoCourse dtoCourse = new DtoCourse();
+				BeanUtils.copyProperties(course, dtoCourse);
+				System.out.println("11111111: " + dtoStudent.getCourses());
+				dtoStudent.getCourses().add(dtoCourse);
+			}
+		}
+
+		return dtoStudent;
 	}
 
 	@Override
